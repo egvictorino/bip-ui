@@ -45,6 +45,9 @@ export type {
 export { Pagination } from './components/Pagination';
 export type { PaginationProps } from './components/Pagination';
 
+export { Tabs, TabList, Tab, TabPanel } from './components/Tabs';
+export type { TabsProps, TabListProps, TabProps, TabPanelProps } from './components/Tabs';
+
 export { Modal, ModalHeader, ModalBody, ModalFooter } from './components/Modal';
 export type {
   ModalProps,
