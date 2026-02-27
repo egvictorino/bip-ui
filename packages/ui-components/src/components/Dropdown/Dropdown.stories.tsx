@@ -42,6 +42,7 @@ const TrashIcon = () => (
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
+  args: { children: null },
   render: () => (
     <Dropdown>
       <DropdownTrigger>
@@ -59,6 +60,7 @@ export const Default: Story = {
 };
 
 export const WithIcons: Story = {
+  args: { children: null },
   render: () => (
     <Dropdown>
       <DropdownTrigger>
@@ -78,6 +80,7 @@ export const WithIcons: Story = {
 };
 
 export const AlignEnd: Story = {
+  args: { children: null },
   render: () => (
     <Dropdown>
       <DropdownTrigger>
@@ -109,6 +112,7 @@ export const AlignEnd: Story = {
 };
 
 export const WithDisabledItems: Story = {
+  args: { children: null },
   render: () => (
     <Dropdown>
       <DropdownTrigger>
@@ -128,6 +132,7 @@ export const WithDisabledItems: Story = {
 };
 
 export const BareButton: Story = {
+  args: { children: null },
   render: () => (
     <Dropdown>
       <DropdownTrigger>
