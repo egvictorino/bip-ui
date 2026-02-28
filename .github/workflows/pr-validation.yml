@@ -22,10 +22,10 @@ jobs:
           echo "📋 PR: $SOURCE → $TARGET"
           
           # Validar flujo de branches
-          if [[ "$TARGET" == "main" ]] && [[ "$SOURCE" != "qa" ]]; then
-            echo "❌ ERROR: Solo se puede mergear a 'main' desde 'qa'"
+          if [[ "$TARGET" == "main" ]] && [[ "$SOURCE" != "qa" ]] && [[ "$SOURCE" != "hotfix/"* ]]; then
+            echo "❌ ERROR: Solo se puede mergear a 'main' desde 'qa' o 'hotfix/*'"
             echo "Tu PR es: $SOURCE → $TARGET"
-            echo "Debe ser: qa → main"
+            echo "Debe ser: qa → main  |  hotfix/* → main"
             exit 1
           fi
           
@@ -66,7 +66,6 @@ jobs:
       
       - name: Lint
         run: pnpm --filter @pymes/ui-components lint
-        continue-on-error: true
       
       - name: Build
         run: |
