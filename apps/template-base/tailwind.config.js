@@ -1,10 +1,10 @@
-import preset from './tailwind.preset.js';
+import bipPreset from '@bip/ui-components/tailwind.preset';
 
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
+    './index.html',
     './src/**/*.{js,ts,jsx,tsx}',
-    './.storybook/**/*.{js,ts,jsx,tsx}',
   ],
-  presets: [preset],
+  presets: [bipPreset],
 };
