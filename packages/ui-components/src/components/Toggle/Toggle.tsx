@@ -2,7 +2,7 @@ import { forwardRef } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import { cn } from '../../lib/cn';
 
-export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
+export interface ToggleProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
   size?: 'sm' | 'md' | 'lg';
   label?: string;
   helperText?: string;
@@ -12,29 +12,32 @@ export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement
 
 const sizes = {
   sm: {
-    box: 'w-3.5 h-3.5',
-    check: 'w-2 h-2',
+    track: 'w-8 h-4',
+    thumb: 'w-3 h-3',
+    translate: 'group-has-[:checked]:translate-x-4',
     label: 'text-xs',
     helper: 'text-[10px]',
-    indent: 'ml-[22px]',
+    indent: 'ml-10',
   },
   md: {
-    box: 'w-4 h-4',
-    check: 'w-2.5 h-2.5',
+    track: 'w-10 h-5',
+    thumb: 'w-4 h-4',
+    translate: 'group-has-[:checked]:translate-x-5',
     label: 'text-sm',
     helper: 'text-xs',
-    indent: 'ml-6',
+    indent: 'ml-12',
   },
   lg: {
-    box: 'w-5 h-5',
-    check: 'w-3 h-3',
+    track: 'w-12 h-6',
+    thumb: 'w-5 h-5',
+    translate: 'group-has-[:checked]:translate-x-6',
     label: 'text-base',
     helper: 'text-sm',
-    indent: 'ml-7',
+    indent: 'ml-14',
   },
 };
 
-export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
+export const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
   (
     {
       size = 'md',
@@ -49,56 +52,54 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     },
     ref
   ) => {
-    const checkboxId =
-      id || (label ? `checkbox-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
+    const toggleId =
+      id || (label ? `toggle-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
     const hasMessage = (error && errorMessage) || helperText;
-    const messageId = hasMessage && checkboxId ? `${checkboxId}-message` : undefined;
+    const messageId = hasMessage && toggleId ? `${toggleId}-message` : undefined;
 
     return (
       <div className={cn('flex flex-col gap-1', className)}>
         <div className="group flex items-center gap-2">
-          {/* Visual checkbox box */}
+          {/* Track */}
           <div
             className={cn(
-              'relative flex shrink-0 items-center justify-center rounded-sm border-2 transition-colors',
+              'relative shrink-0 rounded-full transition-colors',
               'group-has-[:focus-visible]:ring-2 group-has-[:focus-visible]:ring-offset-2',
-              sizes[size].box,
+              sizes[size].track,
               error
-                ? 'border-red-500 group-has-[:checked]:bg-red-500 group-has-[:checked]:border-red-500 group-has-[:focus-visible]:ring-red-500'
-                : 'border-interaction-primary-default group-has-[:checked]:bg-interaction-primary-default group-has-[:checked]:border-interaction-primary-default group-has-[:focus-visible]:ring-interaction-primary-default hover:border-interaction-primary-hover',
+                ? 'bg-red-200 group-has-[:checked]:bg-red-500 group-has-[:focus-visible]:ring-red-500'
+                : 'bg-interaction-tertiary-pressed group-has-[:checked]:bg-interaction-primary-default group-has-[:focus-visible]:ring-interaction-primary-default',
               disabled && 'opacity-50 cursor-not-allowed'
             )}
           >
-            {/* Native input overlaying the visual box */}
+            {/* Native input — overlays the entire track */}
             <input
               ref={ref}
-              id={checkboxId}
+              id={toggleId}
               type="checkbox"
+              role="switch"
               disabled={disabled}
               aria-invalid={error || undefined}
               aria-describedby={messageId}
               className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
               {...props}
             />
-            {/* Checkmark icon — visible only when checked (colored background) */}
-            <svg
+
+            {/* Thumb — slides on check */}
+            <span
               className={cn(
-                'pointer-events-none text-white transition-opacity',
-                'opacity-0 group-has-[:checked]:opacity-100',
-                sizes[size].check
+                'absolute top-1/2 left-[2px] -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform',
+                sizes[size].thumb,
+                sizes[size].translate
               )}
-              viewBox="0 0 16 16"
-              fill="currentColor"
               aria-hidden="true"
-            >
-              <path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" />
-            </svg>
+            />
           </div>
 
           {/* Label */}
           {label && (
             <label
-              htmlFor={checkboxId}
+              htmlFor={toggleId}
               className={cn(
                 'select-none font-medium transition-colors cursor-pointer',
                 sizes[size].label,
@@ -133,4 +134,4 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
   }
 );
 
-Checkbox.displayName = 'Checkbox';
+Toggle.displayName = 'Toggle';
