@@ -62,25 +62,25 @@ export const Overview = () => {
     'Selected': '#E4FCFF',
   };
 
-
   const textColors = {
     'Primary': '#23232A',
     'Secondary': '#5E5E60',
     'Disabled': '#A6A7A8',
     'White': '#FFFFFF',
   };
-  
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
       <h1 className="text-4xl font-bold mb-2 text-text-primary">Color Palette</h1>
       <h4 className="text-xl font-semibold mb-4 text-text-secondary">Version 0.0.1</h4>
       <p className="text-lg text-text-primary mb-12">
-        The following colores are the core colors used in the design system.<br></br>
-        Follow the guidelines for usage to maintain consistency across the product. 
+        The following colors are the core colors used in the design system.
+        <br />
+        Follow the guidelines for usage to maintain consistency across the product.
       </p>
-    
-    <p className="text-sm text-text-secondary mb-12">Click on any color swatch to copy its hex code to your clipboard.</p>
+      <p className="text-sm text-text-secondary mb-12">
+        Click on any color swatch to copy its hex code to your clipboard.
+      </p>
       <ColorGroup title="Interaction Colors" colors={interactionColors} />
       <ColorGroup title="Text Colors" colors={textColors} />
     </div>
