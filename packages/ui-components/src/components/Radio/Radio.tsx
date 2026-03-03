@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import { cn } from '../../lib/cn';
 
@@ -49,8 +49,8 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
     },
     ref
   ) => {
-    const radioId =
-      id || (label ? `radio-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
+    const generatedId = useId();
+    const radioId = id || (label ? generatedId : undefined);
     const hasMessage = (error && errorMessage) || helperText;
     const messageId = hasMessage && radioId ? `${radioId}-message` : undefined;
 
@@ -75,7 +75,6 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
               id={radioId}
               type="radio"
               disabled={disabled}
-              aria-invalid={error || undefined}
               aria-describedby={messageId}
               className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
               {...props}

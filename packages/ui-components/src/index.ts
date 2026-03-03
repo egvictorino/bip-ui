@@ -72,3 +72,12 @@ export type {
 
 export { Skeleton } from './components/Skeleton';
 export type { SkeletonProps } from './components/Skeleton';
+
+export { Navbar, NavbarBrand, NavbarNav, NavbarItem, NavbarActions } from './components/Navbar';
+export type {
+  NavbarProps,
+  NavbarBrandProps,
+  NavbarNavProps,
+  NavbarItemProps,
+  NavbarActionsProps,
+} from './components/Navbar';

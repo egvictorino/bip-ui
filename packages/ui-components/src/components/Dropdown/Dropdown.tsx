@@ -173,6 +173,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
       role="menu"
       aria-orientation="vertical"
       aria-labelledby={triggerId}
+      tabIndex={-1}
       onKeyDown={handleKeyDown}
       className={cn(
         'absolute z-50 min-w-[160px] rounded-md border border-interaction-tertiary-default bg-white py-1 shadow-md',
@@ -245,3 +246,9 @@ export const DropdownDivider: React.FC = () => (
     className="my-1 border-t border-interaction-tertiary-default"
   />
 );
+
+Dropdown.displayName = 'Dropdown';
+DropdownTrigger.displayName = 'DropdownTrigger';
+DropdownMenu.displayName = 'DropdownMenu';
+DropdownItem.displayName = 'DropdownItem';
+DropdownDivider.displayName = 'DropdownDivider';
