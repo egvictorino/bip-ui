@@ -223,7 +223,7 @@ feedback-info-{light|subtle|text}                    → #EFF6FF / #DBEAFE / #1D
 ### Accessibility requirements
 
 **Form components** must include:
-- `aria-invalid={error || undefined}` (not `aria-invalid="false"`) — **only on native `<input>`, `<textarea>`, `<select>`**. Do NOT add `aria-invalid` to elements with `role="radio"` or `role="checkbox"` — it is not a valid ARIA property for those roles. Error state is communicated via `aria-describedby` → `role="alert"` span.
+- `aria-invalid={error || undefined}` (not `aria-invalid="false"`) — valid on `<input type="checkbox">`, `<input type="text">`, `<textarea>`, `<select>`. **Do NOT add to `<input type="radio">`** — the `radio` role does not support `aria-invalid` per WAI-ARIA spec (jsx-a11y `role-supports-aria-props` will error). For radio, error state is communicated exclusively via `aria-describedby` → `role="alert"` span at the group level.
 - `aria-describedby={messageId}` linked to helper/error span
 - `role="alert"` on error message spans
 - `htmlFor` / `id` pairing on labels
