@@ -20,6 +20,9 @@ export type { BadgeProps } from './components/Badge';
 export { Select } from './components/Select';
 export type { SelectProps, SelectOption } from './components/Select';
 
+export { MultiSelect } from './components/MultiSelect';
+export type { MultiSelectProps, MultiSelectOption } from './components/MultiSelect';
+
 export { Alert } from './components/Alert';
 export type { AlertProps } from './components/Alert';
 
