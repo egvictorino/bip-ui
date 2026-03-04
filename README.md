@@ -1,7 +1,7 @@
 # BipUI — Monorepo
 
 Design system y librería de componentes React.
-Monorepo basado en **pnpm workspaces** que centraliza la librería de componentes, utilidades compartidas y el template base para nuevos clientes.
+Monorepo basado en **pnpm workspaces** que centraliza la librería de componentes y utilidades compartidas.
 
 ---
 
@@ -15,7 +15,7 @@ Monorepo basado en **pnpm workspaces** que centraliza la librería de componente
 - [Tokens de Diseño](#tokens-de-diseño)
 - [Estrategia de Branches](#estrategia-de-branches)
 - [CI/CD](#cicd)
-- [Agregar Nuevo Cliente](#agregar-nuevo-cliente)
+- [Usar en un Proyecto Externo](#usar-en-un-proyecto-externo)
 
 ---
 
@@ -23,23 +23,9 @@ Monorepo basado en **pnpm workspaces** que centraliza la librería de componente
 
 ```
 bip-ui/
-├── packages/
-│   ├── ui-components/      # Librería de componentes React  →  @bip/ui-components
-│   └── shared-utils/       # Utilidades TypeScript puras    →  @bip/shared-utils
-└── apps/
-    └── template-base/      # Starter app para nuevos clientes
-```
-
-Los paquetes internos se consumen con el protocolo workspace:
-
-```jsonc
-// package.json de cualquier app cliente
-{
-  "dependencies": {
-    "@bip/ui-components": "workspace:*",
-    "@bip/shared-utils": "workspace:*"
-  }
-}
+└── packages/
+    ├── ui-components/      # Librería de componentes React  →  @bip/ui-components
+    └── shared-utils/       # Utilidades TypeScript puras    →  @bip/shared-utils
 ```
 
 ---
@@ -74,9 +60,6 @@ pnpm --filter @bip/ui-components build
 
 # 3. Abrir Storybook  →  http://localhost:6006
 pnpm --filter @bip/ui-components storybook
-
-# 4. Levantar template base  →  http://localhost:5173
-pnpm --filter @bip/template-base dev
 ```
 
 ---
@@ -90,7 +73,8 @@ pnpm --filter @bip/ui-components storybook        # Dev Storybook
 pnpm --filter @bip/ui-components build-storybook  # Build estático
 pnpm --filter @bip/ui-components build            # Build librería
 pnpm --filter @bip/ui-components lint             # Lint
-pnpm --filter @bip/shared-utils test              # Tests (vitest)
+pnpm --filter @bip/shared-utils test              # Tests utilidades (vitest)
+pnpm --filter @bip/ui-components test             # Tests componentes (vitest + happy-dom)
 ```
 
 ### Monorepo completo
@@ -123,7 +107,8 @@ pnpm dev     # Modo desarrollo paralelo
 
 | Componente | Descripción |
 |------------|-------------|
-| `Alert` | Mensajes de estado con variantes `info`, `success`, `warning`, `error` y acción dismiss |
+| `Alert` | Mensajes de estado con variantes `info`, `success`, `warning`, `error`; botón dismiss (`onClose`); `role="status"` (info/success) o `role="alert"` (warning/error) |
+| `Toast` | Notificaciones flotantes vía `<ToastProvider>` + hook `useToast()` — auto-dismiss con barra de progreso, máx. simultáneos configurable |
 | `Badge` | Etiqueta compacta con variantes semánticas y punto indicador opcional |
 | `Spinner` | Indicador de carga animado con tamaños y colores |
 | `Skeleton` | Placeholder de carga con variantes `text`, `circle`, `rect` y prop `lines` |
@@ -139,6 +124,7 @@ pnpm dev     # Modo desarrollo paralelo
 
 | Componente | Descripción |
 |------------|-------------|
+| `Navbar` | Barra de navegación compound: `NavbarBrand`, `NavbarNav`, `NavbarItem`, `NavbarActions` — sticky, responsive con menú hamburguesa, navegación accesible (WAI-ARIA Navigation + Disclosure) |
 | `Breadcrumb` | Ruta de navegación con separador configurable |
 | `Tabs` | Pestañas accesibles: `TabList`, `Tab`, `TabPanel` |
 | `Pagination` | Paginador con salto a primera/última página |
@@ -150,6 +136,12 @@ pnpm dev     # Modo desarrollo paralelo
 |------------|-------------|
 | `Modal` | Diálogo con focus trap y portal: `ModalHeader`, `ModalBody`, `ModalFooter` |
 | `Tooltip` | Tooltip posicionable con delay configurable |
+
+### Navegación lateral
+
+| Componente | Descripción |
+|------------|-------------|
+| `Sidebar` | Panel lateral compound: `SidebarHeader`, `SidebarBrand`, `SidebarContent`, `SidebarGroup`, `SidebarGroupLabel`, `SidebarItem`, `SidebarFooter`, `SidebarTrigger` — colapsable (w-60↔w-16), drawer móvil, Tooltip en ítems colapsados |
 
 ---
 
@@ -266,22 +258,85 @@ Cuatro workflows de GitHub Actions, uno por ambiente:
 **Reglas del pipeline:**
 - Todos los workflows instalan dependencias con `--frozen-lockfile` para garantizar reproducibilidad.
 - Los tests siempre se ejecutan **antes** del build (fail-fast).
-- Orden de build garantizado: `shared-utils → ui-components → template-base`.
+- Orden de build garantizado: `shared-utils → ui-components`.
 
 ---
 
-## Agregar Nuevo Cliente
+## Usar en un Proyecto Externo
+
+Pasos para consumir BipUI desde un repositorio independiente.
+
+### 1. Instalar los paquetes
+
+**Desde GitHub (sin publicar en npm):**
 
 ```bash
-# Copiar el template base
-cp -r apps/template-base apps/nombre-cliente
+# Con pnpm
+pnpm add github:TU-ORG/bip-ui#main --filter @bip/ui-components
+pnpm add github:TU-ORG/bip-ui#main --filter @bip/shared-utils
+```
 
-# Actualizar name en package.json del nuevo cliente
-# Instalar dependencias
-pnpm install
+**Desde npm / registro privado (cuando se publique):**
 
-# Levantar
-pnpm --filter @bip/nombre-cliente dev
+```bash
+pnpm add @bip/ui-components @bip/shared-utils
+```
+
+### 2. Instalar las peer dependencies
+
+```bash
+pnpm add react react-dom
+pnpm add -D tailwindcss postcss autoprefixer
+```
+
+### 3. Configurar Tailwind
+
+```js
+// tailwind.config.js
+import bipPreset from '@bip/ui-components/tailwind.preset';
+
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+    // El preset ya incluye automáticamente el path de la librería
+  ],
+  presets: [bipPreset],
+};
+```
+
+```css
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+### 4. Usar los componentes
+
+```tsx
+import { Button, Input, ToastProvider, useToast } from '@bip/ui-components';
+import { formatCurrency, validateRFC } from '@bip/shared-utils';
+
+// Wrap the app root with ToastProvider
+export const App = () => (
+  <ToastProvider>
+    <MiPagina />
+  </ToastProvider>
+);
+
+export const MiPagina = () => {
+  const { addToast } = useToast();
+  return (
+    <div>
+      <Input label="RFC" />
+      <Button variant="primary" onClick={() => addToast({ variant: 'success', message: '¡Guardado!' })}>
+        Guardar
+      </Button>
+      <p>{formatCurrency(1500)}</p>
+    </div>
+  );
+};
 ```
 
 ---

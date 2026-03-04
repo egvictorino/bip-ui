@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import { cn } from '../../lib/cn';
 
@@ -10,12 +10,14 @@ export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   errorMessage?: string;
 }
 
-const sizes = {
+type SizeTokens = { box: string; dot: string; label: string; helper: string; indent: string };
+
+const sizes: Record<NonNullable<RadioProps['size']>, SizeTokens> = {
   sm: {
     box: 'w-3.5 h-3.5',
     dot: 'w-1.5 h-1.5',
     label: 'text-xs',
-    helper: 'text-[10px]',
+    helper: 'text-xs',
     indent: 'ml-[22px]',
   },
   md: {
@@ -49,10 +51,12 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
     },
     ref
   ) => {
-    const radioId =
-      id || (label ? `radio-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
+    const generatedId = useId();
+    // Always fall back to generatedId so aria-describedby linkage works
+    // even when no label or explicit id is provided
+    const radioId = id ?? generatedId;
     const hasMessage = (error && errorMessage) || helperText;
-    const messageId = hasMessage && radioId ? `${radioId}-message` : undefined;
+    const messageId = hasMessage ? `${radioId}-message` : undefined;
 
     return (
       <div className={cn('flex flex-col gap-1', className)}>
@@ -75,7 +79,6 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
               id={radioId}
               type="radio"
               disabled={disabled}
-              aria-invalid={error || undefined}
               aria-describedby={messageId}
               className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
               {...props}

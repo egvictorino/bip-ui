@@ -5,10 +5,10 @@
   "private": true,
   "description": "BipUI — React component library and design system",
   "scripts": {
-    "dev": "pnpm --parallel --recursive dev",
-    "build": "pnpm --recursive build",
-    "test": "echo \"Tests pendientes\"",
-    "lint": "pnpm --recursive lint",
+    "dev": "pnpm --filter @bip/ui-components storybook",
+    "build": "pnpm --filter @bip/shared-utils build && pnpm --filter @bip/ui-components build",
+    "test": "pnpm --filter @bip/shared-utils test && pnpm --filter @bip/ui-components test",
+    "lint": "pnpm --filter @bip/ui-components lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
@@ -17,13 +17,14 @@
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.56.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "prettier": "^3.1.1",
     "typescript": "^5.3.3"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "pnpm": ">=9.15.9"
   },
   "pnpm": {
@@ -39,6 +40,7 @@
       "esbuild": "^0.25.0",
       "minimatch@<3.1.4": "3.1.4",
       "minimatch@>=9.0.0 <9.0.7": "9.0.7",
+      "minimatch@>=10.0.0 <10.2.3": "10.2.3",
       "rollup": "^4.59.0"
     }
   }

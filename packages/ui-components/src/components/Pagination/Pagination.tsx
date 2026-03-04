@@ -48,7 +48,7 @@ function getPageRange(
 
 const BASE_BTN = cn(
   'inline-flex h-8 w-8 items-center justify-center rounded text-sm font-medium transition-colors',
-  'focus:outline-none focus:ring-2 focus:ring-interaction-primary-default focus:ring-offset-1'
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-interaction-primary-default focus-visible:ring-offset-1'
 );
 const BTN_ACTIVE = 'bg-interaction-primary-default text-text-white';
 const BTN_DEFAULT = cn(
@@ -144,3 +144,5 @@ export const Pagination: React.FC<PaginationProps> = ({
     </nav>
   );
 };
+
+Pagination.displayName = 'Pagination';

@@ -5,13 +5,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-# Install dependencies (requires pnpm 9.15.9+)
+# Install dependencies (requires Node >=20 and pnpm 9.15.9+)
 pnpm install
 
 # Build order matters — shared-utils must build before ui-components
 pnpm --filter @bip/shared-utils build
 pnpm --filter @bip/ui-components build
-pnpm --filter @bip/template-base build
 
 # Component development
 pnpm --filter @bip/ui-components storybook        # http://localhost:6006
@@ -20,6 +19,7 @@ pnpm --filter @bip/ui-components build-storybook
 # Lint & test (scoped)
 pnpm --filter @bip/ui-components lint
 pnpm --filter @bip/shared-utils test
+pnpm --filter @bip/ui-components test   # component tests (vitest + happy-dom)
 
 # All packages at once
 pnpm build
@@ -39,11 +39,8 @@ PRs always go: `feature/xxx → dev → qa → main`. Hotfixes branch from `main
 
 **pnpm workspaces monorepo:**
 
-- `packages/ui-components` — React component library. Main deliverable. Builds to `dist/index.{es,umd}.js` + types.
+- `packages/ui-components` — React component library. Main deliverable. Builds to `dist/` with one file per component (ES only, `preserveModules: true`) + individual `.d.ts` files. Entry: `dist/index.js`.
 - `packages/shared-utils` — Pure TypeScript utilities (formatting, validation). No runtime deps.
-- `apps/template-base` — Starter app for new clients. Consumes both packages via `workspace:*`.
-
-Internal dependencies use the workspace protocol: `"@bip/ui-components": "workspace:*"`.
 
 ## Tailwind consumer setup
 
@@ -72,7 +69,7 @@ export default {
 
 El preset resuelve el `content` path de `dist/**/*.js` con una ruta absoluta desde su propia ubicación (`import.meta.url`), por lo que funciona tanto en el monorepo como en proyectos externos instalados vía npm.
 
-`template-base` ya tiene esta configuración lista como referencia. Para proyectos externos (fuera del monorepo), instalar primero `tailwindcss`, `postcss` y `autoprefixer` como devDependencies.
+Para proyectos externos, instalar primero `tailwindcss`, `postcss` y `autoprefixer` como devDependencies.
 
 ## shared-utils (`packages/shared-utils`)
 
@@ -88,6 +85,16 @@ Pure TypeScript utilities — no runtime dependencies.
 
 **Build note:** `tsconfig.json` excludes `**/*.test.ts` from compilation so test files never appear in `dist/`. Do not remove this exclude.
 
+## Component testing (`packages/ui-components`)
+
+Test files live alongside components: `ComponentName.test.tsx`. Configured with:
+- **vitest** + **happy-dom** (ESM-native DOM — do not switch to jsdom@28, it has ESM incompatibility)
+- **@testing-library/react** + **@testing-library/user-event** + **@testing-library/jest-dom**
+- `vitest.config.ts` at package root — sets `globals: true`, `environment: 'happy-dom'`, `setupFiles: ['./src/test-setup.ts']`
+- `src/test-setup.ts` imports `@testing-library/jest-dom` to extend `expect`
+- `vite-plugin-dts` excludes `**/*.test.tsx` so test files never appear in `dist/`
+- `tsconfig.json` keeps test files **included** (no exclude) so the IDE resolves test imports correctly; `"types": ["vitest/globals", "@testing-library/jest-dom"]` provides global types
+
 ## CI/CD
 
 Four workflows, one per environment:
@@ -101,8 +108,8 @@ Four workflows, one per environment:
 
 **Rules:**
 - All workflows use `pnpm install --frozen-lockfile` — never use `--no-frozen-lockfile` in CI.
-- Tests (`pnpm --filter @bip/shared-utils test`) always run **before** build (fail-fast).
-- Build order in every pipeline: `shared-utils → ui-components → template-base`.
+- Tests for **both** packages always run **before** build (fail-fast): `pnpm --filter @bip/shared-utils test` then `pnpm --filter @bip/ui-components test`.
+- Build order in every pipeline: `shared-utils → ui-components`.
 
 ## Component Patterns (`packages/ui-components`)
 
@@ -121,14 +128,19 @@ Form components (anything with a ref) use `forwardRef`. Display components use `
 
 ```tsx
 // Form component
+import { forwardRef, useId } from 'react';
+
 export const Component = forwardRef<HTMLInputElement, ComponentProps>(
   ({ size = 'md', label, error = false, disabled = false, id, ...props }, ref) => {
-    const componentId = id || (label ? `prefix-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined);
+    const generatedId = useId();
+    const componentId = id || (label ? generatedId : undefined);
     ...
   }
 );
 Component.displayName = 'Component';
 ```
+
+**ID generation rule:** always use `useId()` from React 18 — never derive IDs from label text. Label-based IDs (`\`input-${label}\``) produce duplicate `id` attributes when two instances share the same label, breaking `htmlFor`/`id` linkage and screen reader accessibility. `useId()` is guaranteed unique per component instance and SSR-safe.
 
 ### Styling rules
 - **Only Tailwind** — no CSS modules, no inline styles.
@@ -152,12 +164,14 @@ Plain `clsx` does not resolve conflicts between same-type utilities (e.g. `w-ful
 
 ### Compound component pattern
 
-Use when a component has multiple named sub-parts that share internal state (examples: Modal, Tabs, Dropdown). All three already exist as references.
+Use when a component has multiple named sub-parts that share internal state (examples: Modal, Tabs, Dropdown, Navbar, Table, Sidebar). All six already exist as references.
 
 ```tsx
-// 1. Context with null default + error guard hook
+// 1. Context with null default + error guard hook (MANDATORY — never use a default object value)
+//    Using a default object value (e.g. createContext({ striped: false })) silences errors when
+//    sub-components are used outside the parent — the null guard makes misuse fail loudly.
 const MyContext = createContext<MyContextValue | null>(null);
-const useMyContext = () => {
+const useMyContext = (): MyContextValue => {
   const ctx = useContext(MyContext);
   if (!ctx) throw new Error('<Sub> must be used inside <Parent>');
   return ctx;
@@ -213,10 +227,25 @@ feedback-info-{light|subtle|text}                    → #EFF6FF / #DBEAFE / #1D
 - `disabled:bg-interaction-disabled` → applied via `disabled` HTML attribute on Input, Select, Textarea
 - `read-only:bg-interaction-field-readonly` → applied via `readOnly` HTML attribute on Input, Textarea
 
+### `displayName` requirement
+
+**All components must set `displayName`** — both `forwardRef` and `React.FC` components. This enables readable component names in React DevTools and error messages.
+
+```tsx
+// forwardRef
+export const Input = forwardRef<HTMLInputElement, InputProps>((...) => { ... });
+Input.displayName = 'Input';
+
+// React.FC (including compound sub-components)
+export const Card: React.FC<CardProps> = (...) => { ... };
+Card.displayName = 'Card';
+CardHeader.displayName = 'CardHeader';
+```
+
 ### Accessibility requirements
 
 **Form components** must include:
-- `aria-invalid={error || undefined}` (not `aria-invalid="false"`)
+- `aria-invalid={error || undefined}` (not `aria-invalid="false"`) — valid on `<input type="checkbox">`, `<input type="text">`, `<textarea>`, `<select>`. **Do NOT add to `<input type="radio">`** — the `radio` role does not support `aria-invalid` per WAI-ARIA spec (jsx-a11y `role-supports-aria-props` will error). For radio, error state is communicated exclusively via `aria-describedby` → `role="alert"` span at the group level.
 - `aria-describedby={messageId}` linked to helper/error span
 - `role="alert"` on error message spans
 - `htmlFor` / `id` pairing on labels
@@ -234,6 +263,43 @@ feedback-info-{light|subtle|text}                    → #EFF6FF / #DBEAFE / #1D
 - Items: `role="menuitem"` placed **after** `{...props}` spread to always enforce it
 - Dividers: `role="separator"` + `aria-orientation="horizontal"`
 - Keyboard: ↑ ↓ Home End navigate items; Escape closes and returns focus to trigger
+
+**Navigation** (Navbar — WAI-ARIA Navigation Landmark + Disclosure pattern):
+- Root: `<nav aria-label="...">` landmark
+- Hamburger: `aria-expanded`, `aria-controls` pointing to the mobile menu panel
+- Mobile panel: conditionally rendered (not CSS hidden); closes on Escape and outside click
+- NavbarItem active: `aria-current="page"`; disabled `<a>`: `aria-disabled` + `tabIndex={-1}`; disabled `<button>`: native `disabled`
+- NavbarNav renders children in `<ul list-none>` with `<li className="contents">` wrappers (semantic list, transparent to layout)
+
+**Alert** (`info/success` → `role="status"`, `warning/error` → `role="alert"`):
+- `onClose` prop: renders a dismiss button with `aria-label="Cerrar alerta"` and `focus-visible:ring` per variant color
+- `role="status"` (aria-live polite) for `info` / `success` — non-interrupting
+- `role="alert"` (aria-live assertive) for `warning` / `error` — urgent announcements
+
+**Toast** (Provider + hook pattern — NOT a compound component with sub-parts):
+- Wrap the app with `<ToastProvider>` — renders a portal in `document.body`
+- Portal container: `role="region"` + `aria-label="Notificaciones"` — `pointer-events-none` on wrapper, `pointer-events-auto` on each toast
+- Individual toasts render `<Alert>` (inherits `role="status"/"alert"` per variant)
+- Call `useToast().addToast({ variant, title, message, duration? })` anywhere inside the provider
+- `duration: 0` → persistent (no auto-dismiss); default is 5000ms
+- Enter/exit CSS transition (translate-x + opacity); progress bar tracks remaining time
+
+**Sidebar** (WAI-ARIA Complementary Landmark + Navigation + Disclosure pattern):
+- Root: `<aside aria-label="Navegación lateral">` — complementary landmark for the panel structure
+- `SidebarContent` renders `<nav aria-label="Navegación">` — navigation landmark for the nav items (two distinct landmarks: aside for layout, nav for items)
+- `SidebarBrand`: hidden automatically when collapsed (`return null`); supports optional `href` prop
+- `SidebarTrigger`: `aria-expanded={!isCollapsed}` + `aria-controls={sidebarId}` — full ARIA disclosure widget compliance
+- `SidebarGroup label="Section"`: `label` prop renders a `<p>` header (hidden when collapsed); children are wrapped in `<ul>` automatically — consumer does NOT need to provide `<ul>`
+- `SidebarItem`: `<li className="contents">` wrapper; collapsed mode adds `aria-label` (string children) for screen readers + `<Tooltip>` for visual feedback
+- `SidebarItem` active: `aria-current="page"`; disabled link: `aria-disabled` + `tabIndex={-1}`; disabled button: native `disabled`
+- Mobile overlay: `role="presentation"` + `aria-hidden="true"`; closes on click or Escape
+- `SidebarGroupLabel`: standalone label component for advanced/non-standard placement — prefer `label` prop on `SidebarGroup` for common cases
+
+**Selectable table rows** (Table):
+- `TableRow selected` prop must include `aria-selected={selected || undefined}` on `<tr>` — the `row` role supports this state
+
+**Sortable table headers** (Table):
+- `TableHeader sortable` must have `tabIndex={0}` and handle `onKeyDown` for Enter/Space — `<th>` is not natively focusable
 
 ### Story format (CSF v3)
 ```tsx

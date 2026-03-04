@@ -130,7 +130,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
   placement = 'bottom-start',
   className,
 }) => {
-  const { isOpen, menuId, triggerId } = useDropdown();
+  const { isOpen, menuId, triggerId, close } = useDropdown();
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Focus first item when menu opens
@@ -161,6 +161,9 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
     } else if (e.key === 'End') {
       e.preventDefault();
       items[items.length - 1]?.focus();
+    } else if (e.key === 'Tab') {
+      // WAI-ARIA Menu Button: Tab closes the menu and lets focus move naturally
+      close();
     }
   };
 
@@ -173,6 +176,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({
       role="menu"
       aria-orientation="vertical"
       aria-labelledby={triggerId}
+      tabIndex={-1}
       onKeyDown={handleKeyDown}
       className={cn(
         'absolute z-50 min-w-[160px] rounded-md border border-interaction-tertiary-default bg-white py-1 shadow-md',
@@ -245,3 +249,9 @@ export const DropdownDivider: React.FC = () => (
     className="my-1 border-t border-interaction-tertiary-default"
   />
 );
+
+Dropdown.displayName = 'Dropdown';
+DropdownTrigger.displayName = 'DropdownTrigger';
+DropdownMenu.displayName = 'DropdownMenu';
+DropdownItem.displayName = 'DropdownItem';
+DropdownDivider.displayName = 'DropdownDivider';

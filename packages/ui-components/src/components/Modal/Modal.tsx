@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useContext, useId, useCallback } from 'react';
+import React, { useEffect, useRef, useContext, useId, useCallback, createContext } from 'react';
 import ReactDOM from 'react-dom';
 import { cn } from '../../lib/cn';
 
@@ -7,10 +7,13 @@ interface ModalContextValue {
   onClose: () => void;
 }
 
-const ModalContext = React.createContext<ModalContextValue>({
-  titleId: '',
-  onClose: () => {},
-});
+const ModalContext = createContext<ModalContextValue | null>(null);
+
+const useModalContext = (): ModalContextValue => {
+  const ctx = useContext(ModalContext);
+  if (!ctx) throw new Error('<ModalHeader> must be used inside <Modal>');
+  return ctx;
+};
 
 export interface ModalProps {
   isOpen: boolean;
@@ -21,7 +24,7 @@ export interface ModalProps {
   children: React.ReactNode;
 }
 
-const sizeStyles = {
+const sizeStyles: Record<NonNullable<ModalProps['size']>, string> = {
   sm: 'max-w-sm',
   md: 'max-w-md',
   lg: 'max-w-lg',
@@ -115,8 +118,9 @@ export const Modal: React.FC<ModalProps> = ({
 
   return ReactDOM.createPortal(
     <ModalContext.Provider value={{ titleId, onClose }}>
-      {/* Backdrop + centering container */}
+      {/* Backdrop + centering container — presentational, Escape handled at document level */}
       <div
+        role="presentation"
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
         onClick={handleBackdropClick}
       >
@@ -132,7 +136,6 @@ export const Modal: React.FC<ModalProps> = ({
             sizeStyles[size],
             className
           )}
-          onClick={(e) => e.stopPropagation()}
         >
           {children}
         </div>
@@ -147,7 +150,7 @@ export interface ModalHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const ModalHeader: React.FC<ModalHeaderProps> = ({ className, children, ...props }) => {
-  const { titleId, onClose } = useContext(ModalContext);
+  const { titleId, onClose } = useModalContext();
 
   return (
     <div
@@ -167,7 +170,7 @@ export const ModalHeader: React.FC<ModalHeaderProps> = ({ className, children, .
         className={cn(
           'shrink-0 rounded p-1 text-text-secondary transition-colors',
           'hover:bg-interaction-tertiary-default hover:text-text-primary',
-          'focus:outline-none focus:ring-2 focus:ring-interaction-primary-default focus:ring-offset-1'
+          'focus:outline-none focus-visible:ring-2 focus-visible:ring-interaction-primary-default focus-visible:ring-offset-1'
         )}
       >
         <svg viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5" aria-hidden="true">
@@ -204,3 +207,8 @@ export const ModalFooter: React.FC<ModalFooterProps> = ({ className, children, .
     {children}
   </div>
 );
+
+Modal.displayName = 'Modal';
+ModalHeader.displayName = 'ModalHeader';
+ModalBody.displayName = 'ModalBody';
+ModalFooter.displayName = 'ModalFooter';
