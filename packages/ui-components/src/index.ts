@@ -5,6 +5,9 @@ export type { ButtonProps } from './components/Button';
 export { Input } from './components/Input';
 export type { InputProps, InputType } from './components/Input';
 
+export { FileUpload } from './components/FileUpload';
+export type { FileUploadProps } from './components/FileUpload';
+
 export { Checkbox } from './components/Checkbox';
 export type { CheckboxProps } from './components/Checkbox';
 
@@ -20,11 +23,14 @@ export type { BadgeProps } from './components/Badge';
 export { Select } from './components/Select';
 export type { SelectProps, SelectOption } from './components/Select';
 
+export { MultiSelect } from './components/MultiSelect';
+export type { MultiSelectProps, MultiSelectOption } from './components/MultiSelect';
+
 export { Alert } from './components/Alert';
 export type { AlertProps } from './components/Alert';
 
 export { ToastProvider, useToast } from './components/Toast';
-export type { ToastProviderProps, ToastConfig } from './components/Toast';
+export type { ToastProviderProps, ToastConfig, ToastPosition } from './components/Toast';
 
 export { Spinner } from './components/Spinner';
 export type { SpinnerProps } from './components/Spinner';
@@ -84,6 +90,12 @@ export type {
   NavbarItemProps,
   NavbarActionsProps,
 } from './components/Navbar';
+
+export { DatePicker } from './components/DatePicker';
+export type { DatePickerProps } from './components/DatePicker';
+
+export { TimePicker } from './components/TimePicker';
+export type { TimePickerProps } from './components/TimePicker';
 
 export {
   Sidebar,
