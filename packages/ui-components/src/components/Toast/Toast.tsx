@@ -85,10 +85,10 @@ const slideOutClasses: Record<ToastPosition, string> = {
 // ─── Progress bar color per variant ──────────────────────────────────────────
 
 const progressBarColor: Record<NonNullable<ToastConfig['variant']>, string> = {
-  info: 'bg-interaction-primary-default',
-  success: 'bg-feedback-success-default',
-  warning: 'bg-feedback-warning-default',
-  error: 'bg-feedback-error-default',
+  info: 'bg-primary',
+  success: 'bg-success',
+  warning: 'bg-warning',
+  error: 'bg-danger',
 };
 
 // ─── ToastItemComponent (internal) ────────────────────────────────────────────

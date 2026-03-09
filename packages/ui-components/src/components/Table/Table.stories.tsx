@@ -169,8 +169,8 @@ export const WithActions: Story = {
           <TableRow key={c.id}>
             <TableCell>
               <div>
-                <p className="font-medium text-text-primary">{c.nombre}</p>
-                <p className="text-xs text-text-secondary">{c.email}</p>
+                <p className="font-medium text-txt">{c.nombre}</p>
+                <p className="text-xs text-txt-secondary">{c.email}</p>
               </div>
             </TableCell>
             <TableCell>
@@ -207,7 +207,7 @@ export const Empty: Story = {
       <TableBody>
         <TableRow>
           <TableCell colSpan={3}>
-            <p className="py-8 text-center text-text-secondary">No hay registros que mostrar.</p>
+            <p className="py-8 text-center text-txt-secondary">No hay registros que mostrar.</p>
           </TableCell>
         </TableRow>
       </TableBody>
