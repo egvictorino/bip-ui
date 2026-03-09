@@ -26,7 +26,7 @@ const ToastButton = ({
     <button
       type="button"
       onClick={() => addToast(config)}
-      className="px-4 py-2 rounded bg-interaction-primary-default text-text-white text-sm font-medium hover:bg-interaction-primary-hover transition-colors"
+      className="px-4 py-2 rounded bg-primary text-txt-white text-sm font-medium hover:bg-primary-hover transition-colors"
     >
       {label}
     </button>
@@ -40,7 +40,7 @@ export const Default: Story = {
   render: () => (
     <ToastProvider>
       <div className="flex flex-col gap-3 items-start">
-        <p className="text-sm text-text-secondary mb-2">
+        <p className="text-sm text-txt-secondary mb-2">
           Las notificaciones aparecen en la esquina superior derecha.
           <br />
           Máximo 3 visibles al mismo tiempo. Se cierran solos en 5 s.
@@ -71,7 +71,7 @@ export const Persistent: Story = {
   render: () => (
     <ToastProvider>
       <div className="flex flex-col gap-3 items-start">
-        <p className="text-sm text-text-secondary mb-2">
+        <p className="text-sm text-txt-secondary mb-2">
           Con <code>duration: 0</code> el toast no se cierra automáticamente.
         </p>
         <ToastButton
@@ -93,7 +93,7 @@ export const MaxThree: Story = {
   render: () => (
     <ToastProvider max={3}>
       <div className="flex flex-col gap-3 items-start">
-        <p className="text-sm text-text-secondary mb-2">
+        <p className="text-sm text-txt-secondary mb-2">
           Al agregar un 4º toast, el más antiguo se elimina automáticamente.
         </p>
         <ToastButton
