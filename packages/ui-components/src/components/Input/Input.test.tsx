@@ -140,15 +140,15 @@ describe('Input', () => {
 
   // ── Variants ────────────────────────────────────────────────────────────────
 
-  it('defaults to outlined variant with border and bg-interaction-field', () => {
+  it('defaults to outlined variant with border and bg-field', () => {
     render(<Input />);
-    expect(screen.getByRole('textbox')).toHaveClass('border', 'bg-interaction-field');
+    expect(screen.getByRole('textbox')).toHaveClass('border', 'bg-field');
   });
 
-  it('filled variant has no border and uses bg-interaction-secondary-default', () => {
+  it('filled variant has no border and uses bg-secondary', () => {
     render(<Input variant="filled" />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('bg-interaction-secondary-default');
+    expect(input).toHaveClass('bg-secondary');
     expect(input).toHaveClass('border-0');
   });
 
